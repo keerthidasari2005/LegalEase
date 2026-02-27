@@ -13,9 +13,14 @@ serve(async (req) => {
 
   try {
     const { doc_type, form_data } = await req.json();
+<<<<<<< HEAD
     const AI_API_KEY = Deno.env.get("AI_API_KEY") ?? Deno.env.get("OPENROUTER_API_KEY");
     const AI_API_URL = Deno.env.get("AI_API_URL") ?? "https://openrouter.ai/api/v1/chat/completions";
     if (!AI_API_KEY) throw new Error("AI_API_KEY is not configured");
+=======
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+>>>>>>> 7526dbcb483a439c3846d5156724043550db5a6b
 
     const today = new Date().toLocaleDateString("en-IN", {
       day: "numeric",
@@ -50,11 +55,19 @@ Date of document: ${today}
 Generate the full legal document now. Remember: NO placeholders, NO blanks, NO brackets. Use the exact data provided above.`;
 
     const response = await fetch(
+<<<<<<< HEAD
       AI_API_URL,
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${AI_API_KEY}`,
+=======
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+>>>>>>> 7526dbcb483a439c3846d5156724043550db5a6b
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
