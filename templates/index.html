@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LegalEase</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <main class="container">
+      <section class="panel">
+        <h1>LegalEase</h1>
+        <p class="subtitle">AI-Powered Legal Documentation Generator</p>
+
+        <form id="doc-form" novalidate>
+          <div class="grid">
+            <label>
+              Document Type
+              <select id="document_type" name="document_type" required>
+                <option value="">Select type</option>
+                <option>Employment Contract</option>
+                <option>Lease Agreement</option>
+                <option>Non-Disclosure Agreement (NDA)</option>
+                <option>Service Agreement</option>
+                <option>Partnership Agreement</option>
+              </select>
+            </label>
+
+            <label>
+              Party A Name
+              <input id="party_a_name" name="party_a_name" type="text" required />
+            </label>
+
+            <label>
+              Party B Name
+              <input id="party_b_name" name="party_b_name" type="text" required />
+            </label>
+
+            <label>
+              Effective Date
+              <input id="effective_date" name="effective_date" type="date" required />
+            </label>
+
+            <label>
+              Jurisdiction
+              <input id="jurisdiction" name="jurisdiction" type="text" value="India" />
+            </label>
+          </div>
+
+          <label>
+            Key Terms
+            <textarea id="terms" name="terms" rows="6" required></textarea>
+          </label>
+
+          <button id="submit-btn" type="submit">Generate Document</button>
+          <p id="status" class="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="panel output">
+        <h2>Generated Document</h2>
+        <pre id="document-output">Your generated legal document will appear here.</pre>
+      </section>
+    </main>
+
+    <script>
+      const form = document.getElementById("doc-form");
+      const statusEl = document.getElementById("status");
+      const outputEl = document.getElementById("document-output");
+      const submitBtn = document.getElementById("submit-btn");
+
+      function getPayload() {
+        return {
+          document_type: document.getElementById("document_type").value.trim(),
+          party_a_name: document.getElementById("party_a_name").value.trim(),
+          party_b_name: document.getElementById("party_b_name").value.trim(),
+          effective_date: document.getElementById("effective_date").value.trim(),
+          jurisdiction: document.getElementById("jurisdiction").value.trim(),
+          terms: document.getElementById("terms").value.trim()
+        };
+      }
+
+      function validate(payload) {
+        const required = ["document_type", "party_a_name", "party_b_name", "effective_date", "terms"];
+        const missing = required.filter((field) => !payload[field]);
+        return missing;
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const payload = getPayload();
+        const missing = validate(payload);
+
+        if (missing.length > 0) {
+          statusEl.textContent = "Please fill all required fields.";
+          statusEl.className = "status error";
+          return;
+        }
+
+        statusEl.textContent = "Generating document...";
+        statusEl.className = "status loading";
+        submitBtn.disabled = true;
+        outputEl.textContent = "Generating...";
+
+        try {
+          const response = await fetch("/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || "Failed to generate document.");
+          }
+
+          outputEl.textContent = data.document;
+          statusEl.textContent = "Document generated successfully.";
+          statusEl.className = "status success";
+        } catch (error) {
+          outputEl.textContent = "Generation failed.";
+          statusEl.textContent = error.message;
+          statusEl.className = "status error";
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
